@@ -1,0 +1,30 @@
+<?php
+    namespace NSI\web;
+
+    define("CONNECTION_REQUESTER_WSDL", "wsdl/ogf_nsi_connection_requester_v2_0.wsdl");
+    define("CALLBACK_LISTENER_PATH", "<LOCAL_FILE>");
+
+    require_once("../autoload.php");
+    require_once(CALLBACK_LISTENER_PATH);
+
+    $requester = new \SoapServer(CONNECTION_REQUESTER_WSDL, array('encoding'=>'UTF-8'));
+
+    $userFunction = false;
+    $definedFunctions = get_defined_functions()["user"];
+    foreach($definedFunctions as $function) {
+        $functionName = explode("\\", $function);
+        $functionName = $functionName[count($functionName) - 1];
+        if(strtolower($functionName) == "__createcallbacklistener") {
+            $userFunction = $function;
+        }
+    }
+    if($userFunction == false) {
+        throw new \Exception("Could not call __createCallbackListener()");
+    }
+
+    $callbackListener = call_user_func($userFunction);
+    $callbackController = new CallbackController($callbackListener);
+
+    $requester->setObject($callbackController);
+    $requester->handle();
+?>
