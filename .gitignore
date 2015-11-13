@@ -2,5 +2,4 @@
 /repo/
 execute.php
 composer.phar
-composer.lock
 .idea/

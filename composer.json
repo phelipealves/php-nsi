@@ -1,8 +1,7 @@
 {
     "name": "brunosoares/php-nsi",
-    "version": "0.0.1",
     "description": "This is a plugin for php to create a applications that needs to use a NSI for circuit request",
-    "type": "PhP Plugin",
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
