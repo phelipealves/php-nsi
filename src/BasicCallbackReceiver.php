@@ -2,7 +2,6 @@
 
 namespace NSI;
 
-
 class BasicCallbackReceiver implements CallbackReceiver {
     private $requesterClient;
 
