@@ -2,8 +2,8 @@
 
 namespace NSI\Model;
 
-
-class Circuit {
+class Circuit
+{
     private static $MAX_BANDWIDTH_SIZE = 10000; // 10GB
 
     private $connectionId;
@@ -18,12 +18,13 @@ class Circuit {
     private $endTime;
     private $paths;
 
-    public function isActive() {
+    public function isActive()
+    {
         $now = time();
         $isInTime = ($now >= $this->startTime && $now <= $this->endTime) ? true : false;
         $haveVlans = ($this->sourceAppliedVlan != null && $this->destinationAppliedVlan != null) ? true : false;
 
-        if($isInTime && $haveVlans && $this->connectionId != null) {
+        if ($isInTime && $haveVlans && $this->connectionId != null) {
             return true;
         }
 
@@ -152,12 +153,13 @@ class Circuit {
 
     /**
      * @param mixed $bandwidth
+     *
      * @throws \Exception
      */
     public function setBandwidth($bandwidth)
     {
-        if($bandwidth >= self::$MAX_BANDWIDTH_SIZE) {
-            throw new \Exception("The circuit bandwidth exceed the maximum permitted");
+        if ($bandwidth >= self::$MAX_BANDWIDTH_SIZE) {
+            throw new \Exception('The circuit bandwidth exceed the maximum permitted');
         }
 
         $this->bandwidth = ($bandwidth < 1) ? 1 : $bandwidth;
