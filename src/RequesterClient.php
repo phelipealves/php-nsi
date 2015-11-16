@@ -340,7 +340,7 @@ class RequesterClient extends \SoapClient
             return false;
         }
 
-        return $result->connectionId;
+        return $result;
     }
 
     public function getReservationData($connectionId)
