@@ -6,24 +6,25 @@ use NSI\Model\Circuit;
 use NSI\Model\LocalCertificate;
 use NSI\Model\Reservation;
 
-class RequesterClient extends \SoapClient {
+class RequesterClient extends \SoapClient
+{
     private $connProviderWsdlUri;
     private $callbackServerUri;
     private $localCert;
     private $nsaProvider;
     private $nsaRequester;
 
-    function __construct($connProviderWsdlUri, $nsaProvider, $nsaRequester, $callBackServerUri = null,
+    public function __construct($connProviderWsdlUri, $nsaProvider, $nsaRequester, $callBackServerUri = null,
                          LocalCertificate $certificate = null)
     {
         if ($nsaProvider == null || $nsaRequester == null) {
-            throw new \Exception("NSA provider and NSA requester must be informed");
+            throw new \Exception('NSA provider and NSA requester must be informed');
         }
         $this->nsaProvider = $nsaProvider;
         $this->nsaRequester = $nsaRequester;
 
-        if($certificate != null && !($certificate instanceof LocalCertificate)) {
-            throw new \Exception("Certificate must be informed like a LocalCertificate object");
+        if ($certificate != null && !($certificate instanceof LocalCertificate)) {
+            throw new \Exception('Certificate must be informed like a LocalCertificate object');
         }
         $this->localCert = $certificate;
 
@@ -32,27 +33,27 @@ class RequesterClient extends \SoapClient {
 
         $isSsl = ($this->localCert == null) ? false : true;
         $streamContextOptions = [
-            'ssl' => array(
-                'verify_peer' => $isSsl,
+            'ssl' => [
+                'verify_peer'       => $isSsl,
                 'allow_self_signed' => true,
-            ),
-            'https' => array(
+            ],
+            'https' => [
                 'curl_verify_ssl_peer'  => $isSsl,
-                'curl_verify_ssl_host'  => $isSsl
-            )
+                'curl_verify_ssl_host'  => $isSsl,
+            ],
         ];
-        if(!$isSsl) {
-            $streamContextOptions['ssl']['ciphers'] = "SHA1";
+        if (!$isSsl) {
+            $streamContextOptions['ssl']['ciphers'] = 'SHA1';
         }
 
         $context = stream_context_create($streamContextOptions);
-        $soapOptions = array(
-            'cache_wsdl' => WSDL_CACHE_NONE,
+        $soapOptions = [
+            'cache_wsdl'     => WSDL_CACHE_NONE,
             'stream_context' => $context,
-            'trace' => 1
-        );
+            'trace'          => 1,
+        ];
 
-        if($isSsl) {
+        if ($isSsl) {
             $soapOptions['local_cert'] = $this->localCert->getCertPath();
             $soapOptions['passphrase'] = $this->localCert->getCertPassphrase();
         }
@@ -60,12 +61,13 @@ class RequesterClient extends \SoapClient {
         parent::__construct($this->connProviderWsdlUri, $soapOptions);
     }
 
-    public function __doRequest($request, $location, $action, $version, $one_way = 0) {
+    public function __doRequest($request, $location, $action, $version, $one_way = 0)
+    {
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->preserveWhiteSpace = false;
         $dom->loadXML($request);
 
-        /** Setting namespaces **/
+        /* Setting namespaces **/
         $dom->documentElement->setAttribute('xmlns:xs', 'http://www.w3.org/2001/XMLSchema');
         $dom->documentElement->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
         $dom->documentElement->setAttribute('xmlns:gns', 'http://nordu.net/namespaces/2013/12/gnsbod');
@@ -73,23 +75,23 @@ class RequesterClient extends \SoapClient {
         $dom->documentElement->setAttribute('xmlns:type', 'http://schemas.ogf.org/nsi/2013/12/connection/types');
         $dom->documentElement->setAttribute('xmlns:head', 'http://schemas.ogf.org/nsi/2013/12/framework/headers');
 
-        /** Generating Correlation ID */
-        $dom->getElementsByTagName("correlationId")->item(0)->nodeValue = 'urn:uuid:'.$this->generateGuid();
+        /* Generating Correlation ID */
+        $dom->getElementsByTagName('correlationId')->item(0)->nodeValue = 'urn:uuid:'.$this->generateGuid();
 
-        /** Setting prefixes of the elements **/
-        $this->changeTag($dom, "ConnectionTrace", "gns:ConnectionTrace");
-        $this->changeTag($dom, "reserve", "type:reserve");
-        $this->changeTag($dom, "reserveCommit","type:reserveCommit");
-        $this->changeTag($dom, "provision", "type:provision");
-        $this->changeTag($dom, "p2ps", "p2p:p2ps");
+        /* Setting prefixes of the elements **/
+        $this->changeTag($dom, 'ConnectionTrace', 'gns:ConnectionTrace');
+        $this->changeTag($dom, 'reserve', 'type:reserve');
+        $this->changeTag($dom, 'reserveCommit', 'type:reserveCommit');
+        $this->changeTag($dom, 'provision', 'type:provision');
+        $this->changeTag($dom, 'p2ps', 'p2p:p2ps');
 
-        /** Setting the criteria version **/
+        /* Setting the criteria version **/
         $criteriaVersion = 1;
-        $criteria = $dom->getElementsByTagName("criteria")->item(0);
-        if($criteria && $criteria != null) {
-            for($i = 0; $i < $criteria->childNodes->length; $i++) {
+        $criteria = $dom->getElementsByTagName('criteria')->item(0);
+        if ($criteria && $criteria != null) {
+            for ($i = 0; $i < $criteria->childNodes->length; $i++) {
                 $childNode = $criteria->childNodes->item($i);
-                if($childNode->nodeName == "version") {
+                if ($childNode->nodeName == 'version') {
                     $criteriaVersion = $childNode->nodeValue;
                     $criteria->removeChild($childNode);
                     break;
@@ -97,48 +99,50 @@ class RequesterClient extends \SoapClient {
             }
         }
 
-        /** Setting attributes **/
-        $this->setAttributeByTag($dom, "Connection", "index", "0");
-        $this->setAttributeByTag($dom, "criteria", "version", $criteriaVersion);
-        $this->setAttributeByTag($dom, "parameter", "type", "protection");
-        $this->setAttributeByTag($dom, "p2p:p2ps", "xmlns:p2p",
-            "http://schemas.ogf.org/nsi/2013/12/services/point2point");
+        /* Setting attributes **/
+        $this->setAttributeByTag($dom, 'Connection', 'index', '0');
+        $this->setAttributeByTag($dom, 'criteria', 'version', $criteriaVersion);
+        $this->setAttributeByTag($dom, 'parameter', 'type', 'protection');
+        $this->setAttributeByTag($dom, 'p2p:p2ps', 'xmlns:p2p',
+            'http://schemas.ogf.org/nsi/2013/12/services/point2point');
 
-        /** Set the STP order **/
-        if($nodes = $dom->getElementsByTagName("orderedSTP")) {
-            for($i = 0; $i < $nodes->length; $i++) {
+        /* Set the STP order **/
+        if ($nodes = $dom->getElementsByTagName('orderedSTP')) {
+            for ($i = 0; $i < $nodes->length; $i++) {
                 $node = $nodes->item($i);
-                $node->setAttribute("order", $i);
+                $node->setAttribute('order', $i);
             }
         }
 
         $request = $dom->saveXML();
 
-        echo "\n\n\n" . $request . "\n\n\n";
+        echo "\n\n\n".$request."\n\n\n";
 
         return parent::__doRequest($request, $location, $action, $version);
     }
 
-    private function setAggHeader() {
-        $ns = "http://schemas.ogf.org/nsi/2013/12/framework/headers";
-        $connection = new \SoapVar(["Connection" => $this->nsaRequester], SOAP_ENC_OBJECT, null, null, null, null);
+    private function setAggHeader()
+    {
+        $ns = 'http://schemas.ogf.org/nsi/2013/12/framework/headers';
+        $connection = new \SoapVar(['Connection' => $this->nsaRequester], SOAP_ENC_OBJECT, null, null, null, null);
 
         $headerBody = [
-            "protocolVersion" => "application/vnd.ogf.nsi.cs.v2.provider+soap",
-            "correlationId" => "",
-            "requesterNSA" => $this->nsaRequester,
-            "providerNSA" => $this->nsaProvider,
-            "replyTo" => $this->callbackServerUri,
-            "ConnectionTrace" => $connection
+            'protocolVersion' => 'application/vnd.ogf.nsi.cs.v2.provider+soap',
+            'correlationId'   => '',
+            'requesterNSA'    => $this->nsaRequester,
+            'providerNSA'     => $this->nsaProvider,
+            'replyTo'         => $this->callbackServerUri,
+            'ConnectionTrace' => $connection,
         ];
 
-        $headerBody = new \SoapVar($headerBody, SOAP_ENC_OBJECT, NULL, NULL, NULL, NULL);
-        $header = new \SoapHeader($ns, "nsiHeader", $headerBody);
+        $headerBody = new \SoapVar($headerBody, SOAP_ENC_OBJECT, null, null, null, null);
+        $header = new \SoapHeader($ns, 'nsiHeader', $headerBody);
 
         $this->__setSoapHeaders($header);
     }
 
-    private function generateGuid() {
+    private function generateGuid()
+    {
         $hexChars = '0123456789abcdef';
         $charsLength = strlen($hexChars);
         $guidText = '';
@@ -156,13 +160,13 @@ class RequesterClient extends \SoapClient {
         return $guidText;
     }
 
-    private function changeTag(\DOMDocument $dom, $oldTagName, $newTagName) {
+    private function changeTag(\DOMDocument $dom, $oldTagName, $newTagName)
+    {
         $newNode = $dom->createElement($newTagName);
 
-        if($oldNode = $dom->getElementsByTagName($oldTagName)->item(0)) {
-
+        if ($oldNode = $dom->getElementsByTagName($oldTagName)->item(0)) {
             $childNodes = $oldNode->childNodes;
-            for($i = 0; $i < $childNodes->length; $i++) {
+            for ($i = 0; $i < $childNodes->length; $i++) {
                 $child = $childNodes->item($i);
                 $newChild = $child->cloneNode(true);
                 $newNode->appendChild($newChild);
@@ -173,9 +177,10 @@ class RequesterClient extends \SoapClient {
         }
     }
 
-    private function setAttributeByTag(\DOMDocument $dom, $tagName, $attName, $attValue){
-        if($nodes = $dom->getElementsByTagName($tagName)) {
-            for($i = 0; $i < $nodes->length; $i++) {
+    private function setAttributeByTag(\DOMDocument $dom, $tagName, $attName, $attValue)
+    {
+        if ($nodes = $dom->getElementsByTagName($tagName)) {
+            for ($i = 0; $i < $nodes->length; $i++) {
                 $node = $nodes->item($i);
                 $node->setAttribute($attName, $attValue);
             }
@@ -186,73 +191,74 @@ class RequesterClient extends \SoapClient {
                                                $version = 1)
     {
         $dateTime_UTC = new \DateTime();
-        $dateTime_UTC->setTimezone(new \DateTimeZone("UTC"));
+        $dateTime_UTC->setTimezone(new \DateTimeZone('UTC'));
         $startTime = $dateTime_UTC->setTimestamp($circuit->getStartTime())->format('Y-m-d\TH:i:s.000-00:00');
         $endTime = $dateTime_UTC->setTimestamp($circuit->getEndTime())->format('Y-m-d\TH:i:s.000-00:00');
 
         $schedule = [
-            "startTime" => $startTime,
-            "endTime" => $endTime
+            'startTime' => $startTime,
+            'endTime'   => $endTime,
         ];
-        $schedule = new \SoapVar($schedule, SOAP_ENC_OBJECT, NULL, NULL, NULL, NULL);
+        $schedule = new \SoapVar($schedule, SOAP_ENC_OBJECT, null, null, null, null);
 
-        $sourceSTP = $circuit->getSourceUrn() . "?vlan=" . $circuit->getSourceVlanRequestRange();
-        $destSTP = $circuit->getDestinationUrn() . "?vlan=" . $circuit->getDestinationVlanRequestRange();
+        $sourceSTP = $circuit->getSourceUrn().'?vlan='.$circuit->getSourceVlanRequestRange();
+        $destSTP = $circuit->getDestinationUrn().'?vlan='.$circuit->getDestinationVlanRequestRange();
 
         $p2ps = [
-            "capacity" => $circuit->getBandwidth(),
-            "directionality" => "Bidirectional",
-            "symmetricPath" => "true",
-            "sourceSTP" => $sourceSTP,
-            "destSTP" => $destSTP,
-            "parameter" => "PROTECTED"
+            'capacity'       => $circuit->getBandwidth(),
+            'directionality' => 'Bidirectional',
+            'symmetricPath'  => 'true',
+            'sourceSTP'      => $sourceSTP,
+            'destSTP'        => $destSTP,
+            'parameter'      => 'PROTECTED',
         ];
 
         $paths = $circuit->getPaths();
-        if($paths != null && count($paths) > 2) {
+        if ($paths != null && count($paths) > 2) {
             $pathsLength = count($paths);
             $waypoints = [];
             for ($i = 1; $i < ($pathsLength - 1); $i++) {
                 $stp = $paths[$i];
-                $stp = new \SoapVar(['stp'=>$stp], SOAP_ENC_OBJECT, NULL, NULL, null, NULL);
-                $orderedSTP = new \SoapVar($stp, SOAP_ENC_OBJECT, NULL, NULL, 'orderedSTP', NULL);
+                $stp = new \SoapVar(['stp' => $stp], SOAP_ENC_OBJECT, null, null, null, null);
+                $orderedSTP = new \SoapVar($stp, SOAP_ENC_OBJECT, null, null, 'orderedSTP', null);
                 $waypoints[] = $orderedSTP;
             }
-            $p2ps[] = new \SoapVar($waypoints, SOAP_ENC_OBJECT, NULL, NULL, "ero", NULL);
+            $p2ps[] = new \SoapVar($waypoints, SOAP_ENC_OBJECT, null, null, 'ero', null);
         }
 
-        $p2ps = new \SoapVar($p2ps, SOAP_ENC_OBJECT, NULL, NULL, NULL, NULL);
+        $p2ps = new \SoapVar($p2ps, SOAP_ENC_OBJECT, null, null, null, null);
 
         $criteria = [
-            "schedule" => $schedule,
-            "serviceType" => "http://services.ogf.org/nsi/2013/12/descriptions/EVTS.A-GOLE",
-            "p2ps" => $p2ps,
-            "version" => $version
+            'schedule'    => $schedule,
+            'serviceType' => 'http://services.ogf.org/nsi/2013/12/descriptions/EVTS.A-GOLE',
+            'p2ps'        => $p2ps,
+            'version'     => $version,
         ];
-        $criteria = new \SoapVar($criteria, SOAP_ENC_OBJECT, NULL, NULL, NULL, NULL);
+        $criteria = new \SoapVar($criteria, SOAP_ENC_OBJECT, null, null, null, null);
 
         $parameters = [
-            "globalReservationId" => $reservationName,
-            "description" => $reservationDescription,
-            "criteria" => $criteria
+            'globalReservationId' => $reservationName,
+            'description'         => $reservationDescription,
+            'criteria'            => $criteria,
         ];
 
-        if($circuit->getConnectionId() != null) {
-            $parameters["connectionId"] = $circuit->getConnectionId();
+        if ($circuit->getConnectionId() != null) {
+            $parameters['connectionId'] = $circuit->getConnectionId();
         }
 
         return $parameters;
     }
 
-    public function getReservationByConnection($connectionId) {
+    public function getReservationByConnection($connectionId)
+    {
         $reservationData = $this->getReservationData($connectionId);
-        if($reservationData === false) {
-            throw new \Exception("Could not get the circuit data of connection " . $connectionId);
+        if ($reservationData === false) {
+            throw new \Exception('Could not get the circuit data of connection '.$connectionId);
         }
 
         $reservationData = $reservationData->reservation;
-        if(!isset($reservationData->criteria)) {
-            throw new \Exception("The circuit with connection " . $connectionId . " cannot be modified");
+        if (!isset($reservationData->criteria)) {
+            throw new \Exception('The circuit with connection '.$connectionId.' cannot be modified');
         }
 
         $reservationName = $reservationData->globalReservationId;
@@ -260,35 +266,35 @@ class RequesterClient extends \SoapClient {
         $version = $reservationData->criteria->version;
 
         $dateTime_UTC = new \DateTime($reservationData->criteria->schedule->startTime);
-        $dateTime_UTC->setTimezone(new \DateTimeZone("UTC"));
+        $dateTime_UTC->setTimezone(new \DateTimeZone('UTC'));
         $startTime = $dateTime_UTC->getTimestamp();
 
         $dateTime_UTC = new \DateTime($reservationData->criteria->schedule->endTime);
-        $dateTime_UTC->setTimezone(new \DateTimeZone("UTC"));
+        $dateTime_UTC->setTimezone(new \DateTimeZone('UTC'));
         $endTime = $dateTime_UTC->getTimestamp();
 
         $urnAndVlans = $this->extractUrnAndVlans($reservationData->criteria->any);
 
         $first = true;
         $paths = [];
-        foreach($reservationData->criteria->children as $child) {
+        foreach ($reservationData->criteria->children as $child) {
             $childUrnAndVlans = $this->extractUrnAndVlans($child->any);
 
-            if($first) {
-                $paths[] = $childUrnAndVlans["source"]["urn"] . "?vlan=" . $childUrnAndVlans["source"]["vlan"];
+            if ($first) {
+                $paths[] = $childUrnAndVlans['source']['urn'].'?vlan='.$childUrnAndVlans['source']['vlan'];
                 $first = false;
             }
-            $paths[] = $childUrnAndVlans["destination"]["urn"] . "?vlan=" . $childUrnAndVlans["destination"]["vlan"];
+            $paths[] = $childUrnAndVlans['destination']['urn'].'?vlan='.$childUrnAndVlans['destination']['vlan'];
         }
 
         $circuit = new Circuit();
         $circuit->setConnectionId($connectionId);
-        $circuit->setSourceUrn($urnAndVlans["source"]["urn"]);
-        $circuit->setSourceVlanRequestRange($urnAndVlans["source"]["vlan"]);
-        $circuit->setSourceAppliedVlan($urnAndVlans["source"]["vlan"]);
-        $circuit->setDestinationUrn($urnAndVlans["destination"]["urn"]);
-        $circuit->setDestinationVlanRequestRange($urnAndVlans["destination"]["vlan"]);
-        $circuit->setDestinationAppliedVlan($urnAndVlans["destination"]["vlan"]);
+        $circuit->setSourceUrn($urnAndVlans['source']['urn']);
+        $circuit->setSourceVlanRequestRange($urnAndVlans['source']['vlan']);
+        $circuit->setSourceAppliedVlan($urnAndVlans['source']['vlan']);
+        $circuit->setDestinationUrn($urnAndVlans['destination']['urn']);
+        $circuit->setDestinationVlanRequestRange($urnAndVlans['destination']['vlan']);
+        $circuit->setDestinationAppliedVlan($urnAndVlans['destination']['vlan']);
         $circuit->setPaths($paths);
         $circuit->setStartTime($startTime);
         $circuit->setEndTime($endTime);
@@ -298,104 +304,110 @@ class RequesterClient extends \SoapClient {
         return $reservation;
     }
 
-    private function extractUrnAndVlans($p2pXml) {
-        $p2pXml = str_replace("<nsi_p2p:p2ps>","<p2p>", $p2pXml);
-        $p2pXml = str_replace("</nsi_p2p:p2ps>","</p2p>", $p2pXml);
-        $p2pXml = '<?xml version="1.0" encoding="UTF-8"?>' . $p2pXml;
+    private function extractUrnAndVlans($p2pXml)
+    {
+        $p2pXml = str_replace('<nsi_p2p:p2ps>', '<p2p>', $p2pXml);
+        $p2pXml = str_replace('</nsi_p2p:p2ps>', '</p2p>', $p2pXml);
+        $p2pXml = '<?xml version="1.0" encoding="UTF-8"?>'.$p2pXml;
 
         $xml = new \DOMDocument();
         $xml->loadXML($p2pXml);
         $parser = new \DOMXpath($xml);
-        $srcStp = $parser->query("//sourceSTP");
+        $srcStp = $parser->query('//sourceSTP');
         $srcStp = $srcStp->item(0)->nodeValue;
-        $dstStp = $parser->query("//destSTP");
+        $dstStp = $parser->query('//destSTP');
         $dstStp = $dstStp->item(0)->nodeValue;
 
-        $sourceUrn = substr($srcStp, 0, strpos($srcStp, "?vlan="));
-        $sourceVlan = substr($srcStp, (strpos($srcStp, "?vlan=") + 6));
-        $destinationUrn = substr($dstStp, 0, strpos($dstStp, "?vlan="));
-        $destinationVlan = substr($dstStp, (strpos($dstStp, "?vlan=") + 6));
+        $sourceUrn = substr($srcStp, 0, strpos($srcStp, '?vlan='));
+        $sourceVlan = substr($srcStp, (strpos($srcStp, '?vlan=') + 6));
+        $destinationUrn = substr($dstStp, 0, strpos($dstStp, '?vlan='));
+        $destinationVlan = substr($dstStp, (strpos($dstStp, '?vlan=') + 6));
 
         $return = [
-            "source" => [
-                "urn" => $sourceUrn,
-                "vlan" => $sourceVlan
+            'source' => [
+                'urn'  => $sourceUrn,
+                'vlan' => $sourceVlan,
             ],
-            "destination" => [
-                "urn" => $destinationUrn,
-                "vlan" => $destinationVlan
-            ]
+            'destination' => [
+                'urn'  => $destinationUrn,
+                'vlan' => $destinationVlan,
+            ],
         ];
 
         return $return;
     }
 
-    public function sendReserve(Circuit $circuit, $reservationName, $reservationDescription, $version = 1) {
+    public function sendReserve(Circuit $circuit, $reservationName, $reservationDescription, $version = 1)
+    {
         $params = $this->createParametersByCircuit($circuit, $reservationName, $reservationDescription, $version);
         $this->setAggHeader();
         try {
             $result = $this->reserve($params);
-        } catch(\SoapFault $error) {
+        } catch (\SoapFault $error) {
             return false;
         }
 
         return $result->connectionId;
     }
 
-    public function getReservationData($connectionId) {
+    public function getReservationData($connectionId)
+    {
         $params = [
-            "connectionId" => $connectionId
+            'connectionId' => $connectionId,
         ];
 
         $this->setAggHeader();
         try {
             $result = $this->querySummarySync($params);
-        } catch(\SoapFault $error) {
+        } catch (\SoapFault $error) {
             return false;
         }
 
         return $result;
     }
 
-    public function sendTerminate($connectionId) {
+    public function sendTerminate($connectionId)
+    {
         $params = [
-            "connectionId" => $connectionId
+            'connectionId' => $connectionId,
         ];
 
         $this->setAggHeader();
-        try{
+        try {
             $result = $this->terminate($params);
-        }catch(\SoapFault $error){
+        } catch (\SoapFault $error) {
             return false;
         }
 
         return $result;
     }
 
-    public function sendReserveCommit($connectionId) {
+    public function sendReserveCommit($connectionId)
+    {
         $params = [
-            "connectionId" => $connectionId
+            'connectionId' => $connectionId,
         ];
 
         $this->setAggHeader();
-        try{
+        try {
             $result = $this->reserveCommit($params);
-        } catch(\SoapFault $error) {
+        } catch (\SoapFault $error) {
             return false;
         }
 
         return $result;
     }
 
-    public function sendProvision($connectionId) {
+    public function sendProvision($connectionId)
+    {
         $params = [
-                "connectionId" => $connectionId
+                'connectionId' => $connectionId,
         ];
 
         $this->setAggHeader();
         try {
             $result = $this->provision($params);
-        } catch(\SoapFault $error) {
+        } catch (\SoapFault $error) {
             return false;
         }
 

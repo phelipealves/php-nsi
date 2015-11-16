@@ -2,13 +2,14 @@
 
 namespace NSI\Model;
 
-
-class LocalCertificate {
+class LocalCertificate
+{
     private $certPath;
     private $certPassphrase;
 
     /**
      * LocalCertificate constructor.
+     *
      * @param $certPath
      * @param $certPassphrase
      */

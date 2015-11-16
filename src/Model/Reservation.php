@@ -2,8 +2,8 @@
 
 namespace NSI\Model;
 
-
-class Reservation {
+class Reservation
+{
     private $name;
     private $description;
     private $circuit;
