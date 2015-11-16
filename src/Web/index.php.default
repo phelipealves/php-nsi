@@ -4,7 +4,13 @@
     define("CONNECTION_REQUESTER_WSDL", "wsdl/ogf_nsi_connection_requester_v2_0.wsdl");
     define("CALLBACK_LISTENER_PATH", "<LOCAL_FILE>");
 
-    require_once("../autoload.php");
+    $composerAutoLoader = __DIR__ . '/../../../../autoload.php';
+    if(file_exists($composerAutoLoader)) {
+        require_once($composerAutoLoader);
+    } else {
+        require_once("../autoload.php");
+    }
+
     require_once(CALLBACK_LISTENER_PATH);
 
     $requester = new \SoapServer(CONNECTION_REQUESTER_WSDL, array('encoding'=>'UTF-8'));
