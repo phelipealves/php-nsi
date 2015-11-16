@@ -1,6 +1,6 @@
 <?php
 
-namespace NSI\web;
+namespace NSI\Web;
 
 use NSI\CallbackReceiver;
 

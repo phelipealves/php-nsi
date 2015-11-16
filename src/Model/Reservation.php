@@ -4,17 +4,35 @@ namespace NSI\Model;
 
 class Reservation
 {
+    private $connectionId;
     private $name;
     private $description;
     private $circuit;
     private $version;
 
-    public function __construct($name, $description, Circuit $circuit, $version)
+    public function __construct($connectionId = null, $name, $description, Circuit $circuit, $version = 1)
     {
+        $this->connectionId = $connectionId;
         $this->name = $name;
         $this->description = $description;
         $this->circuit = $circuit;
         $this->version = $version;
+    }
+
+    /**
+     * @return null
+     */
+    public function getConnectionId()
+    {
+        return $this->connectionId;
+    }
+
+    /**
+     * @param null $connectionId
+     */
+    public function setConnectionId($connectionId)
+    {
+        $this->connectionId = $connectionId;
     }
 
     /**

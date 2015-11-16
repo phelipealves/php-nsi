@@ -150,13 +150,6 @@ class RequesterClient extends \SoapClient
             $guidText .= (in_array($i, [9, 14, 19, 24])) ? '-' : $hexChars[rand(0, $charsLength - 1)];
         }
 
-//        $randomString = md5(uniqid(rand(), true));
-//        $guidText = substr($randomString, 0, 8) . '-' .
-//            substr($randomString, 8, 4) . '-' .
-//            substr($randomString, 12, 4). '-' .
-//            substr($randomString, 16, 4). '-' .
-//            substr($randomString, 20);
-
         return $guidText;
     }
 
@@ -187,9 +180,10 @@ class RequesterClient extends \SoapClient
         }
     }
 
-    private function createParametersByCircuit(Circuit $circuit, $reservationName, $reservationDescription,
-                                               $version = 1)
+    private function createParametersByReservation(Reservation $reservation)
     {
+        $circuit = $reservation->getCircuit();
+
         $dateTime_UTC = new \DateTime();
         $dateTime_UTC->setTimezone(new \DateTimeZone('UTC'));
         $startTime = $dateTime_UTC->setTimestamp($circuit->getStartTime())->format('Y-m-d\TH:i:s.000-00:00');
@@ -232,18 +226,18 @@ class RequesterClient extends \SoapClient
             'schedule'    => $schedule,
             'serviceType' => 'http://services.ogf.org/nsi/2013/12/descriptions/EVTS.A-GOLE',
             'p2ps'        => $p2ps,
-            'version'     => $version,
+            'version'     => $reservation->getVersion(),
         ];
         $criteria = new \SoapVar($criteria, SOAP_ENC_OBJECT, null, null, null, null);
 
         $parameters = [
-            'globalReservationId' => $reservationName,
-            'description'         => $reservationDescription,
+            'globalReservationId' => $reservation->getName(),
+            'description'         => $reservation->getDescription(),
             'criteria'            => $criteria,
         ];
 
-        if ($circuit->getConnectionId() != null) {
-            $parameters['connectionId'] = $circuit->getConnectionId();
+        if ($reservation->getConnectionId() != null) {
+            $parameters['connectionId'] = $reservation->getConnectionId();
         }
 
         return $parameters;
@@ -288,7 +282,6 @@ class RequesterClient extends \SoapClient
         }
 
         $circuit = new Circuit();
-        $circuit->setConnectionId($connectionId);
         $circuit->setSourceUrn($urnAndVlans['source']['urn']);
         $circuit->setSourceVlanRequestRange($urnAndVlans['source']['vlan']);
         $circuit->setSourceAppliedVlan($urnAndVlans['source']['vlan']);
@@ -299,7 +292,7 @@ class RequesterClient extends \SoapClient
         $circuit->setStartTime($startTime);
         $circuit->setEndTime($endTime);
 
-        $reservation = new Reservation($reservationName, $reservationDescription, $circuit, $version);
+        $reservation = new Reservation($connectionId, $reservationName, $reservationDescription, $circuit, $version);
 
         return $reservation;
     }
@@ -337,9 +330,9 @@ class RequesterClient extends \SoapClient
         return $return;
     }
 
-    public function sendReserve(Circuit $circuit, $reservationName, $reservationDescription, $version = 1)
+    public function sendReserve(Reservation $reservation)
     {
-        $params = $this->createParametersByCircuit($circuit, $reservationName, $reservationDescription, $version);
+        $params = $this->createParametersByReservation($reservation);
         $this->setAggHeader();
         try {
             $result = $this->reserve($params);

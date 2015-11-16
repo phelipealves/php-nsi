@@ -6,7 +6,6 @@ class Circuit
 {
     private static $MAX_BANDWIDTH_SIZE = 10000; // 10GB
 
-    private $connectionId;
     private $sourceUrn;
     private $sourceVlanRequestRange;
     private $sourceAppliedVlan;
@@ -24,27 +23,11 @@ class Circuit
         $isInTime = ($now >= $this->startTime && $now <= $this->endTime) ? true : false;
         $haveVlans = ($this->sourceAppliedVlan != null && $this->destinationAppliedVlan != null) ? true : false;
 
-        if ($isInTime && $haveVlans && $this->connectionId != null) {
+        if ($isInTime && $haveVlans) {
             return true;
         }
 
         return false;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getConnectionId()
-    {
-        return $this->connectionId;
-    }
-
-    /**
-     * @param mixed $connectionId
-     */
-    public function setConnectionId($connectionId)
-    {
-        $this->connectionId = $connectionId;
     }
 
     /**
