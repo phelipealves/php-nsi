@@ -4,7 +4,7 @@ namespace NSI;
 
 class NsiCallbackServer
 {
-    protected static $WEBSERVER_ROOT = '/web/';
+    protected static $WEBSERVER_ROOT = '/Web/';
     protected static $DEFAULT_INDEX_FILE = 'index.php.default';
 
     private $ipAddress;
