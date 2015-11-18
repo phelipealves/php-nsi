@@ -116,8 +116,6 @@ class RequesterClient extends \SoapClient
 
         $request = $dom->saveXML();
 
-        echo "\n\n\n".$request."\n\n\n";
-
         return parent::__doRequest($request, $location, $action, $version);
     }
 
@@ -337,7 +335,7 @@ class RequesterClient extends \SoapClient
         try {
             $result = $this->reserve($params);
         } catch (\SoapFault $error) {
-            return false;
+            throw $error;
         }
 
         return $result;
@@ -353,7 +351,7 @@ class RequesterClient extends \SoapClient
         try {
             $result = $this->querySummarySync($params);
         } catch (\SoapFault $error) {
-            return false;
+            throw $error;
         }
 
         return $result;
@@ -369,7 +367,7 @@ class RequesterClient extends \SoapClient
         try {
             $result = $this->terminate($params);
         } catch (\SoapFault $error) {
-            return false;
+            throw $error;
         }
 
         return $result;
@@ -385,7 +383,7 @@ class RequesterClient extends \SoapClient
         try {
             $result = $this->reserveCommit($params);
         } catch (\SoapFault $error) {
-            return false;
+            throw $error;
         }
 
         return $result;
@@ -401,7 +399,7 @@ class RequesterClient extends \SoapClient
         try {
             $result = $this->provision($params);
         } catch (\SoapFault $error) {
-            return false;
+            throw $error;
         }
 
         return $result;
