@@ -291,7 +291,7 @@ class RequesterClient extends \SoapClient
         $circuit->setStartTime($startTime);
         $circuit->setEndTime($endTime);
 
-        $reservation = new Reservation($connectionId, $reservationName, $reservationDescription, $circuit, $version);
+        $reservation = new Reservation($reservationName, $reservationDescription, $circuit, $connectionId, $version);
 
         return $reservation;
     }
