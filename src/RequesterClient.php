@@ -2,6 +2,7 @@
 
 namespace NSI;
 
+use NSI\Common\Utils;
 use NSI\Model\Circuit;
 use NSI\Model\LocalCertificate;
 use NSI\Model\Reservation;
@@ -61,7 +62,7 @@ class RequesterClient extends \SoapClient
         parent::__construct($this->connProviderWsdlUri, $soapOptions);
     }
 
-    public function __doRequest($request, $location, $action, $version, $one_way = 0)
+    public function __doRequest($request, $location, $action, $version)
     {
         $dom = new \DOMDocument('1.0', 'UTF-8');
         $dom->preserveWhiteSpace = false;
@@ -265,12 +266,12 @@ class RequesterClient extends \SoapClient
         $dateTime_UTC->setTimezone(new \DateTimeZone('UTC'));
         $endTime = $dateTime_UTC->getTimestamp();
 
-        $urnAndVlans = $this->extractUrnAndVlans($reservationData->criteria->any);
+        $urnAndVlans = Utils::extractUrnAndVlans($reservationData->criteria->any);
 
         $first = true;
         $paths = [];
         foreach ($reservationData->criteria->children as $child) {
-            $childUrnAndVlans = $this->extractUrnAndVlans($child->any);
+            $childUrnAndVlans = Utils::extractUrnAndVlans($child->any);
 
             if ($first) {
                 $paths[] = $childUrnAndVlans['source']['urn'].'?vlan='.$childUrnAndVlans['source']['vlan'];
@@ -293,39 +294,6 @@ class RequesterClient extends \SoapClient
         $reservation = new Reservation($connectionId, $reservationName, $reservationDescription, $circuit, $version);
 
         return $reservation;
-    }
-
-    private function extractUrnAndVlans($p2pXml)
-    {
-        $p2pXml = str_replace('<nsi_p2p:p2ps>', '<p2p>', $p2pXml);
-        $p2pXml = str_replace('</nsi_p2p:p2ps>', '</p2p>', $p2pXml);
-        $p2pXml = '<?xml version="1.0" encoding="UTF-8"?>'.$p2pXml;
-
-        $xml = new \DOMDocument();
-        $xml->loadXML($p2pXml);
-        $parser = new \DOMXpath($xml);
-        $srcStp = $parser->query('//sourceSTP');
-        $srcStp = $srcStp->item(0)->nodeValue;
-        $dstStp = $parser->query('//destSTP');
-        $dstStp = $dstStp->item(0)->nodeValue;
-
-        $sourceUrn = substr($srcStp, 0, strpos($srcStp, '?vlan='));
-        $sourceVlan = substr($srcStp, (strpos($srcStp, '?vlan=') + 6));
-        $destinationUrn = substr($dstStp, 0, strpos($dstStp, '?vlan='));
-        $destinationVlan = substr($dstStp, (strpos($dstStp, '?vlan=') + 6));
-
-        $return = [
-            'source' => [
-                'urn'  => $sourceUrn,
-                'vlan' => $sourceVlan,
-            ],
-            'destination' => [
-                'urn'  => $destinationUrn,
-                'vlan' => $destinationVlan,
-            ],
-        ];
-
-        return $return;
     }
 
     public function sendReserve(Reservation $reservation)

@@ -10,12 +10,12 @@ class Reservation
     private $circuit;
     private $version;
 
-    public function __construct($connectionId = null, $name, $description, Circuit $circuit, $version = 1)
+    public function __construct($name, $description, Circuit $circuit, $connectionId = null, $version = 1)
     {
-        $this->connectionId = $connectionId;
         $this->name = $name;
         $this->description = $description;
         $this->circuit = $circuit;
+        $this->connectionId = $connectionId;
         $this->version = $version;
     }
 

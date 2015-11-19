@@ -6,98 +6,98 @@ use NSI\CallbackReceiver;
 
 class CallbackController
 {
-    private $callbackReceiverListener;
+    private $listener;
 
-    public function __construct(CallbackReceiver $callbackReceiverListener)
+    public function __construct(CallbackReceiver $listener)
     {
-        if ($callbackReceiverListener == null) {
+        if ($listener == null) {
             throw new \Exception('Callback receiver listener must be informed');
         }
-        $this->callbackReceiverListener = $callbackReceiverListener;
+        $this->listener = $listener;
     }
 
     public function dataPlaneStateChange($response)
     {
-        $this->callbackReceiverListener->notifyDataPlaneStateChange($response);
+        $this->listener->notifyDataPlaneStateChange($response);
     }
 
     public function messageDeliveryTimeout($response)
     {
-        $this->callbackReceiverListener->notifyMessageDeliveryTimeout($response);
+        $this->listener->notifyMessageDeliveryTimeout($response);
     }
 
     public function reserveConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyReserveConfirmed($response);
+        $this->listener->notifyReserveConfirmed($response);
     }
 
     public function reserveFailed($response)
     {
-        $this->callbackReceiverListener->notifyReserveFailed($response);
+        $this->listener->notifyReserveFailed($response);
     }
 
     public function reserveAbortConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyReserveAbortConfirmed($response);
+        $this->listener->notifyReserveAbortConfirmed($response);
     }
 
     public function reserveCommitConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyReserveCommitConfirmed($response);
+        $this->listener->notifyReserveCommitConfirmed($response);
     }
 
     public function reserveCommitFailed($response)
     {
-        $this->callbackReceiverListener->notifyReserveCommitFailed($response);
+        $this->listener->notifyReserveCommitFailed($response);
     }
 
     public function provisionConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyProvisionConfirmed($response);
+        $this->listener->notifyProvisionConfirmed($response);
     }
 
     public function terminateConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyTerminateConfirmed($response);
+        $this->listener->notifyTerminateConfirmed($response);
     }
 
     public function releaseConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyReleaseConfirmed($response);
+        $this->listener->notifyReleaseConfirmed($response);
     }
 
     public function querySummaryConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyQuerySummaryConfirmed($response);
+        $this->listener->notifyQuerySummaryConfirmed($response);
     }
 
     public function queryRecursiveConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyQueryRecursiveConfirmed($response);
+        $this->listener->notifyQueryRecursiveConfirmed($response);
     }
 
     public function queryNotificationConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyQueryNotificationConfirmed($response);
+        $this->listener->notifyQueryNotificationConfirmed($response);
     }
 
     public function queryResultConfirmed($response)
     {
-        $this->callbackReceiverListener->notifyQueryResultConfirmed($response);
+        $this->listener->notifyQueryResultConfirmed($response);
     }
 
     public function error($response)
     {
-        $this->callbackReceiverListener->notifyError($response);
+        $this->listener->notifyError($response);
     }
 
     public function errorEvent($response)
     {
-        $this->callbackReceiverListener->notifyErrorEvent($response);
+        $this->listener->notifyErrorEvent($response);
     }
 
     public function reserveTimeout($response)
     {
-        $this->callbackReceiverListener->notifyReserveTimeout($response);
+        $this->listener->notifyReserveTimeout($response);
     }
 }
