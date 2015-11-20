@@ -268,24 +268,29 @@ class RequesterClient extends \SoapClient
 
         $urnAndVlans = Utils::extractUrnAndVlans($reservationData->criteria->any);
 
-        $first = true;
+        $circuit = new Circuit();
+
+        $position = 0;
         $paths = [];
         foreach ($reservationData->criteria->children as $child) {
             $childUrnAndVlans = Utils::extractUrnAndVlans($child->any);
 
-            if ($first) {
+            if ($position == 0) {
+                $circuit->setSourceVlanRequestRange($childUrnAndVlans['source']['vlan']);
                 $paths[] = $childUrnAndVlans['source']['urn'].'?vlan='.$childUrnAndVlans['source']['vlan'];
-                $first = false;
+            }
+
+            if($position == (count($reservationData->criteria->children) -1)) {
+                $circuit->setDestinationVlanRequestRange($childUrnAndVlans['destination']['vlan']);
             }
             $paths[] = $childUrnAndVlans['destination']['urn'].'?vlan='.$childUrnAndVlans['destination']['vlan'];
+
+            $position++;
         }
 
-        $circuit = new Circuit();
         $circuit->setSourceUrn($urnAndVlans['source']['urn']);
-        $circuit->setSourceVlanRequestRange($urnAndVlans['source']['vlan']);
         $circuit->setSourceAppliedVlan($urnAndVlans['source']['vlan']);
         $circuit->setDestinationUrn($urnAndVlans['destination']['urn']);
-        $circuit->setDestinationVlanRequestRange($urnAndVlans['destination']['vlan']);
         $circuit->setDestinationAppliedVlan($urnAndVlans['destination']['vlan']);
         $circuit->setPaths($paths);
         $circuit->setStartTime($startTime);
