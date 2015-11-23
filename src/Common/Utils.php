@@ -43,4 +43,16 @@ class Utils
 
         return $return;
     }
+
+    public static function generateGuid()
+    {
+        $hexChars = '0123456789abcdef';
+        $charsLength = strlen($hexChars);
+        $guidText = '';
+        for ($i = 1; $i <= 36; $i++) {
+            $guidText .= (in_array($i, [9, 14, 19, 24])) ? '-' : $hexChars[rand(0, $charsLength - 1)];
+        }
+
+        return $guidText;
+    }
 }

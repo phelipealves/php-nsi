@@ -77,7 +77,7 @@ class RequesterClient extends \SoapClient
         $dom->documentElement->setAttribute('xmlns:head', 'http://schemas.ogf.org/nsi/2013/12/framework/headers');
 
         /* Generating Correlation ID */
-        $dom->getElementsByTagName('correlationId')->item(0)->nodeValue = 'urn:uuid:'.$this->generateGuid();
+        $dom->getElementsByTagName('correlationId')->item(0)->nodeValue = 'urn:uuid:' . Utils::generateGuid();
 
         /* Setting prefixes of the elements **/
         $this->changeTag($dom, 'ConnectionTrace', 'gns:ConnectionTrace');
@@ -138,18 +138,6 @@ class RequesterClient extends \SoapClient
         $header = new \SoapHeader($ns, 'nsiHeader', $headerBody);
 
         $this->__setSoapHeaders($header);
-    }
-
-    private function generateGuid()
-    {
-        $hexChars = '0123456789abcdef';
-        $charsLength = strlen($hexChars);
-        $guidText = '';
-        for ($i = 1; $i <= 36; $i++) {
-            $guidText .= (in_array($i, [9, 14, 19, 24])) ? '-' : $hexChars[rand(0, $charsLength - 1)];
-        }
-
-        return $guidText;
     }
 
     private function changeTag(\DOMDocument $dom, $oldTagName, $newTagName)
@@ -280,7 +268,7 @@ class RequesterClient extends \SoapClient
                 $paths[] = $childUrnAndVlans['source']['urn'].'?vlan='.$childUrnAndVlans['source']['vlan'];
             }
 
-            if($position == (count($reservationData->criteria->children) -1)) {
+            if ($position == (count($reservationData->criteria->children) -1)) {
                 $circuit->setDestinationVlanRequestRange($childUrnAndVlans['destination']['vlan']);
             }
             $paths[] = $childUrnAndVlans['destination']['urn'].'?vlan='.$childUrnAndVlans['destination']['vlan'];
